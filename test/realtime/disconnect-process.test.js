@@ -67,13 +67,12 @@ describe('realtime#disconnect', function () {
   it('should disconnect success', function (done) {
     realtime.disconnectSocketQueue.push(client)
 
-    realtime.disconnect(client)
+    realtime.queueForDisconnect(client)
 
     setTimeout(() => {
       assert(typeof realtime.users[client.id] === 'undefined')
       assert(emitOnlineUsersStub.called)
       assert(updateNoteStub.called)
-      assert(realtime.disconnectSocketQueue.length === 0)
       assert(Object.keys(realtime.users).length === 0)
       assert(Object.keys(realtime.notes).length === 0)
       done()
@@ -84,13 +83,12 @@ describe('realtime#disconnect', function () {
     realtime.notes[noteId].server.isDirty = false
     realtime.disconnectSocketQueue.push(client)
 
-    realtime.disconnect(client)
+    realtime.queueForDisconnect(client)
 
     setTimeout(() => {
       assert(typeof realtime.users[client.id] === 'undefined')
       assert(emitOnlineUsersStub.called)
       assert(updateNoteStub.called === false)
-      assert(realtime.disconnectSocketQueue.length === 0)
       assert(Object.keys(realtime.users).length === 0)
       assert(Object.keys(realtime.notes).length === 0)
       done()
