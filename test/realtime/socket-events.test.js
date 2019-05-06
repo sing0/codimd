@@ -370,6 +370,7 @@ describe('realtime#socket event', function () {
         }
       }
       realtime.notes[noteId] = {
+        id: noteId,
         owner: noteOwnerId,
         socks: [clientSocket, otherClient]
       }
