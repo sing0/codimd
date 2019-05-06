@@ -5,10 +5,16 @@ const assert = require('assert')
 const mock = require('mock-require')
 const sinon = require('sinon')
 
-const { makeMockSocket } = require('./utils')
+const { makeMockSocket, removeModuleFromRequireCache } = require('./utils')
 
 describe('realtime#disconnect', function () {
-  it('should disconnect success', function (done) {
+  const noteId = 'note1_id'
+  let realtime
+  let updateNoteStub
+  let emitOnlineUsersStub
+  let client
+
+  beforeEach(() => {
     mock('../../lib/logger', {
       error: () => {
       }
@@ -21,13 +27,13 @@ describe('realtime#disconnect', function () {
       }
     })
     mock('../../lib/config', {})
-    const noteId = 'note1_id'
-    const realtime = require('../../lib/realtime')
-    const updateNoteStub = sinon.stub(realtime, 'updateNote').callsFake((note, callback) => {
+
+    realtime = require('../../lib/realtime')
+    updateNoteStub = sinon.stub(realtime, 'updateNote').callsFake((note, callback) => {
       callback(null, note)
     })
-    const emitOnlineUsersStub = sinon.stub(realtime, 'emitOnlineUsers')
-    let client = makeMockSocket()
+    emitOnlineUsersStub = sinon.stub(realtime, 'emitOnlineUsers')
+    client = makeMockSocket()
     client.noteId = noteId
 
     realtime.users[client.id] = {
@@ -51,7 +57,14 @@ describe('realtime#disconnect', function () {
       },
       socks: [client]
     }
+  })
 
+  afterEach(() => {
+    removeModuleFromRequireCache('../../lib/realtime')
+    sinon.restore()
+  })
+
+  it('should disconnect success', function (done) {
     realtime.disconnectSocketQueue.push(client)
 
     realtime.disconnect(client)
@@ -67,4 +80,20 @@ describe('realtime#disconnect', function () {
     }, 5)
   })
 
+  it('should disconnect success when note is not dirty', function (done) {
+    realtime.notes[noteId].server.isDirty = false
+    realtime.disconnectSocketQueue.push(client)
+
+    realtime.disconnect(client)
+
+    setTimeout(() => {
+      assert(typeof realtime.users[client.id] === 'undefined')
+      assert(emitOnlineUsersStub.called)
+      assert(updateNoteStub.called === false)
+      assert(realtime.disconnectSocketQueue.length === 0)
+      assert(Object.keys(realtime.users).length === 0)
+      assert(Object.keys(realtime.notes).length === 0)
+      done()
+    }, 5)
+  })
 })
