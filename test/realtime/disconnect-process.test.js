@@ -65,8 +65,6 @@ describe('realtime#disconnect', function () {
   })
 
   it('should disconnect success', function (done) {
-    realtime.disconnectSocketQueue.push(client)
-
     realtime.queueForDisconnect(client)
 
     setTimeout(() => {
@@ -81,8 +79,6 @@ describe('realtime#disconnect', function () {
 
   it('should disconnect success when note is not dirty', function (done) {
     realtime.notes[noteId].server.isDirty = false
-    realtime.disconnectSocketQueue.push(client)
-
     realtime.queueForDisconnect(client)
 
     setTimeout(() => {
