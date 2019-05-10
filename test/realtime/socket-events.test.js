@@ -135,7 +135,6 @@ describe('realtime#socket event', function () {
       userStatusFunc(userData)
       assert(emitUserStatusStub.called === false)
     })
-
   })
 
   describe('disconnect', function () {
@@ -146,9 +145,10 @@ describe('realtime#socket event', function () {
       assert(queueForDisconnectStub.calledOnce)
     })
 
-    it.skip('should quick return when socket is in disconnect queue', () => {
+    it('should quick return when socket is in disconnect queue', () => {
       const disconnectFunc = eventFuncMap.get('disconnect')
       const queueForDisconnectStub = sinon.stub(realtime, 'queueForDisconnect')
+      realtime.disconnectProcessQueue.push(clientSocket.id, async () => {})
       disconnectFunc()
       assert(queueForDisconnectStub.called === false)
     })

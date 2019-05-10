@@ -23,13 +23,15 @@ describe('ProcessQueue', function () {
 
   it('should not accept more than maximum task', () => {
     const queue = new ProcessQueue(2)
-    const task = async () => {
+    const task = {
+      id: 1,
+      processingFunc: async () => {
+      }
     }
 
     queue.start()
-    assert(queue.push(task))
-    assert(queue.push(task))
-    assert(queue.push(task) === false)
+    assert(queue.push(1, () => (Promise.resolve())))
+    assert(queue.push(1, () => (Promise.resolve())) === false)
   })
 
   it('should run task every interval', (done) => {
@@ -39,8 +41,8 @@ describe('ProcessQueue', function () {
       runningClock.push(clock.now)
     }
     queue.start()
-    assert(queue.push(task))
-    assert(queue.push(task))
+    assert(queue.push(1, task))
+    assert(queue.push(2, task))
     clock.tick(5)
     setTimeout(() => {
       clock.tick(5)
@@ -90,8 +92,8 @@ describe('ProcessQueue', function () {
     const normalTask = sinon.spy(async () => {
     })
     queue.start()
-    assert(queue.push(failedTask))
-    assert(queue.push(normalTask))
+    assert(queue.push(1, failedTask))
+    assert(queue.push(2, normalTask))
     clock.tick(100)
     setTimeout(() => {
       clock.tick(100)
@@ -115,7 +117,7 @@ describe('ProcessQueue', function () {
       })
     }
     queue.start()
-    queue.push(longTask)
+    queue.push(1, longTask)
     clock.tick(10)
     setTimeout(() => {
       clock.tick(10)
