@@ -54,7 +54,7 @@ describe('save revision job', function () {
     }, 50)
   })
 
-  it.skip('should not set saverSleep when more than 1 note save revision', (done) => {
+  it('should not set saverSleep when more than 1 note save revision', (done) => {
     mockModels.Revision.saveAllNotesRevision.callsFake((callback) => {
       callback(null, [1])
     })
