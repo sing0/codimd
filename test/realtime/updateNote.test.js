@@ -91,7 +91,7 @@ describe('realtime#updateNote', function () {
     realtime.updateNote(note, callback)
     clock.restore()
     setTimeout(() => {
-      assert(note.lastchangeuserprofile.name = 'User 01')
+      assert(note.lastchangeuserprofile.name === 'User 01')
       done()
     }, 50)
   })
@@ -128,7 +128,7 @@ describe('realtime#updateNote', function () {
     realtime = require('../../lib/realtime')
     realtime.updateNote(note, callback)
     setTimeout(() => {
-      assert(note.lastchangeuserprofile.name = 'User 01')
+      assert(note.lastchangeuserprofile.name === 'User 01')
       assert(callback.calledOnce)
       assert(callback.lastCall.args[0] === null)
       assert(updateNoteStub.calledOnce)
@@ -275,7 +275,7 @@ describe('realtime#updateNote', function () {
     realtime = require('../../lib/realtime')
     realtime.updateNote(note, callback)
     setTimeout(() => {
-      assert(note.lastchangeuserprofile.name = 'User 01')
+      assert(note.lastchangeuserprofile.name === 'User 01')
       assert(callback.calledOnce)
       assert(callback.lastCall.args[0] === null)
       assert(callback.lastCall.args[1] === null)
