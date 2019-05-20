@@ -16,7 +16,7 @@ describe('realtime#socket event', function () {
   let configMock
   let clock
 
-  beforeEach(function () {
+  beforeEach(function (done) {
     clock = sinon.useFakeTimers({
       toFake: ['setInterval']
     })
@@ -49,19 +49,19 @@ describe('realtime#socket event', function () {
       eventFuncMap.set(event, func)
     }
     realtime.maintenance = false
-    sinon.stub(realtime, 'parseNoteIdFromSocket').callsFake((socket, callback) => {
-      /* eslint-disable-next-line */
-      callback(null, noteId)
+    sinon.stub(realtime, 'parseNoteIdFromSocketAsync').callsFake((socket) => {
+      return Promise.resolve(noteId)
     })
     const wrappedFuncs = []
-    wrappedFuncs.push(sinon.stub(realtime, 'failConnection'))
     wrappedFuncs.push(sinon.stub(realtime, 'updateUserData'))
-    wrappedFuncs.push(sinon.stub(realtime, 'startConnection'))
     realtime.connection(clientSocket)
 
-    wrappedFuncs.forEach((wrappedFunc) => {
-      wrappedFunc.restore()
-    })
+    setTimeout(() => {
+      wrappedFuncs.forEach((wrappedFunc) => {
+        wrappedFunc.restore()
+      })
+      done()
+    }, 50)
   })
 
   afterEach(function () {
