@@ -5,8 +5,8 @@ const assert = require('assert')
 const mock = require('mock-require')
 const sinon = require('sinon')
 
-const {createFakeLogger} = require('../testDoubles/loggerFake')
-const {removeModuleFromRequireCache ,removeLibModuleCache, makeMockSocket} = require('./utils')
+const { createFakeLogger } = require('../testDoubles/loggerFake')
+const { removeModuleFromRequireCache, removeLibModuleCache, makeMockSocket } = require('./utils')
 const realtimeJobStub = require('../testDoubles/realtimeJobStub')
 
 describe('realtime#connection', function () {
@@ -128,16 +128,18 @@ describe('realtime#connection', function () {
           id: noteId,
           authors: [
             {
+              userId: 'user1',
+              color: 'red',
               user: {
-                userId: 'user1',
-                color: 'red',
+                id: 'user1',
                 name: 'Alice'
               }
             },
             {
+              userId: 'user2',
+              color: 'blue',
               user: {
-                userId: 'user2',
-                color: 'blue',
+                id: 'user2',
                 name: 'Bob'
               }
             }
@@ -174,6 +176,14 @@ describe('realtime#connection', function () {
           assert(failConnectionSpy.callCount === 0)
           assert(realtime.getNotePool()[noteId].id === noteId)
           assert(realtime.getNotePool()[noteId].socks.length === 1)
+          assert.deepStrictEqual(realtime.getNotePool()[noteId].authors, {
+            user1: {
+              userid: 'user1', color: 'red', photo: undefined, name: 'Alice'
+            },
+            user2: {
+              userid: 'user2', color: 'blue', photo: undefined, name: 'Bob'
+            }
+          })
           assert(Object.keys(realtime.getNotePool()[noteId].users).length === 1)
           done()
         }, 50)
