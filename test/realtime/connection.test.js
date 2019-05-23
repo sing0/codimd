@@ -6,7 +6,7 @@ const mock = require('mock-require')
 const sinon = require('sinon')
 
 const { createFakeLogger } = require('../testDoubles/loggerFake')
-const { removeModuleFromRequireCache, removeLibModuleCache, makeMockSocket } = require('./utils')
+const { removeLibModuleCache, makeMockSocket } = require('./utils')
 const realtimeJobStub = require('../testDoubles/realtimeJobStub')
 
 describe('realtime#connection', function () {
@@ -48,61 +48,62 @@ describe('realtime#connection', function () {
         assert(!spy.called)
       })
 
-      it('should failed when parse noteId occur error', () => {
+      it('should failed when parse noteId occur error', (done) => {
         const mockSocket = makeMockSocket()
         realtime.maintenance = false
-        const parseNoteIdFromSocketSpy = sinon.stub(realtime, 'parseNoteIdFromSocket').callsFake((socket, callback) => {
+        const parseNoteIdFromSocketSpy = sinon.stub(realtime, 'parseNoteIdFromSocketAsync').callsFake(async (socket) => {
           /* eslint-disable-next-line */
-          callback('error', null)
+          throw 'error'
         })
 
         const failConnectionSpy = sinon.stub(realtime, 'failConnection')
 
         realtime.connection(mockSocket)
 
-        assert(parseNoteIdFromSocketSpy.called)
-        assert(failConnectionSpy.calledOnce)
-        assert.deepStrictEqual(failConnectionSpy.lastCall.args, [500, 'error', mockSocket])
+        setTimeout(() => {
+          assert(parseNoteIdFromSocketSpy.called)
+          assert(failConnectionSpy.calledOnce)
+          assert.deepStrictEqual(failConnectionSpy.lastCall.args, [500, 'error', mockSocket])
+          done()
+        }, 50)
       })
 
-      it('should failed when noteId not exists', () => {
+      it('should failed when noteId not exists', (done) => {
         const mockSocket = makeMockSocket()
         realtime.maintenance = false
-        const parseNoteIdFromSocketSpy = sinon.stub(realtime, 'parseNoteIdFromSocket').callsFake((socket, callback) => {
-          /* eslint-disable-next-line */
-          callback(null, null)
+        const parseNoteIdFromSocketSpy = sinon.stub(realtime, 'parseNoteIdFromSocketAsync').callsFake(async (socket) => {
+          return null
         })
 
         const failConnectionSpy = sinon.stub(realtime, 'failConnection')
 
         realtime.connection(mockSocket)
 
-        assert(parseNoteIdFromSocketSpy.called)
-        assert(failConnectionSpy.calledOnce)
-        assert.deepStrictEqual(failConnectionSpy.lastCall.args, [404, 'note id not found', mockSocket])
+        setTimeout(() => {
+          assert(parseNoteIdFromSocketSpy.called)
+          assert(failConnectionSpy.calledOnce)
+          assert.deepStrictEqual(failConnectionSpy.lastCall.args, [404, 'note id not found', mockSocket])
+          done()
+        }, 50)
       })
     })
 
-    it('should success connect', function () {
+    it('should success connect', function (done) {
       const mockSocket = makeMockSocket()
       const noteId = 'note123'
       realtime.maintenance = false
-      const parseNoteIdFromSocketSpy = sinon.stub(realtime, 'parseNoteIdFromSocket').callsFake((socket, callback) => {
-        /* eslint-disable-next-line */
-        callback(null, noteId)
+      const parseNoteIdFromSocketSpy = sinon.stub(realtime, 'parseNoteIdFromSocketAsync').callsFake(async (socket) => {
+        return noteId
       })
-      const failConnectionStub = sinon.stub(realtime, 'failConnection')
       const updateUserDataStub = sinon.stub(realtime, 'updateUserData')
-      const startConnectionStub = sinon.stub(realtime, 'startConnection')
 
       realtime.connection(mockSocket)
 
-      assert.ok(parseNoteIdFromSocketSpy.calledOnce)
-
-      assert(failConnectionStub.called === false)
-      assert(updateUserDataStub.calledOnce)
-      assert(startConnectionStub.calledOnce)
-      assert(mockSocket.on.callCount === 11)
+      setTimeout(() => {
+        assert.ok(parseNoteIdFromSocketSpy.calledOnce)
+        assert(updateUserDataStub.calledOnce)
+        done()
+      }, 50)
     })
 
     describe('flow', function () {
@@ -115,9 +116,8 @@ describe('realtime#connection', function () {
         mockSocket.request.user.id = 'user1'
         mockSocket.noteId = noteId
         realtime.maintenance = false
-        sinon.stub(realtime, 'parseNoteIdFromSocket').callsFake((socket, callback) => {
-          /* eslint-disable-next-line */
-          callback(null, noteId)
+        sinon.stub(realtime, 'parseNoteIdFromSocketAsync').callsFake(async (socket) => {
+          return noteId
         })
         const updateHistoryStub = sinon.stub(realtime, 'updateHistory')
         const emitOnlineUsersStub = sinon.stub(realtime, 'emitOnlineUsers')
