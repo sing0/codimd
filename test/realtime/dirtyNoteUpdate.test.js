@@ -124,6 +124,6 @@ describe('realtime#update note is dirty timer', function () {
       assert(note.socks[0].disconnect.called)
       assert(note.socks[2].disconnect.called)
       done()
-    }, 5)
+    }, 50)
   })
 })
