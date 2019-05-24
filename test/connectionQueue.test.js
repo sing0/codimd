@@ -17,6 +17,7 @@ describe('ConnectionQueue', function () {
 
   afterEach(() => {
     clock.restore()
+    sinon.restore()
   })
 
   it('should not accept more than maximum task', () => {
@@ -80,7 +81,7 @@ describe('ConnectionQueue', function () {
     }, 1)
   })
 
-  it('should run process although error occurred', () => {
+  it('should run process although error occurred', (done) => {
     const queue = new ConnectionQueuing(2, 100)
     const failedTask = sinon.spy(async () => {
       throw new Error('error')
@@ -98,6 +99,7 @@ describe('ConnectionQueue', function () {
       // assert(queue.queue.length === 0)
       assert(failedTask.called)
       assert(normalTask.called)
+      done()
     }, 5)
   })
 
@@ -125,5 +127,4 @@ describe('ConnectionQueue', function () {
       done()
     }, 2)
   })
-
 })
